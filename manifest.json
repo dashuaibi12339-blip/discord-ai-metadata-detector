@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Discord 元数据检测器（AI 绘图提示词）",
+  "version": "1.6.0",
+  "description": "在 Discord 网页版自动检测图片附件是否带 AI 绘图元数据（A1111 / ComfyUI / NovelAI / InvokeAI），并直接读取提示词，无需逐张下载。",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage", "unlimitedStorage", "contextMenus", "downloads"],
+  "host_permissions": [
+    "https://*.discord.com/*",
+    "https://cdn.discordapp.com/*",
+    "https://media.discordapp.net/*",
+    "https://*.discordapp.com/*",
+    "https://*.discordapp.net/*"
+  ],
+  "background": { "service_worker": "background/service_worker.js", "type": "module" },
+  "content_scripts": [
+    {
+      "matches": ["https://discord.com/*", "https://ptb.discord.com/*", "https://canary.discord.com/*"],
+      "js": ["content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "Discord 元数据检测器",
+    "default_popup": "popup/popup.html",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  },
+  "options_ui": { "page": "options/options.html", "open_in_tab": true },
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "web_accessible_resources": [
+    { "resources": ["icons/*"], "matches": ["https://*.discord.com/*"] }
+  ]
+}

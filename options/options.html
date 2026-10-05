@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Discord 元数据检测器 · 设置</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<div class="page">
+  <h1>Discord 元数据检测器 · 设置</h1>
+  <p class="lead">检测 Discord 网页版图片附件里的 AI 绘图元数据（A1111 / ComfyUI / NovelAI / InvokeAI / Fooocus / SwarmUI 等），分类结果为 NovelAI / 本地 AI 工具 / 无提示词三类。</p>
+
+  <h2>扫描</h2>
+  <div class="grid">
+    <label class="chk"><input type="checkbox" id="enabled"><span><b>启用检测</b>（取消勾选＝停止识别：移除所有徽章，不再检测任何图片，也不发起任何网络请求）</span></label>
+    <label class="chk"><input type="checkbox" id="autoScan"><span>打开 Discord 时自动检测（图片进入视野才抓取，省流量）</span></label>
+    <label class="fld"><span><b>alpha 隐写检测模式（off / auto / always）</b></span>
+      <select id="stealthScan">
+        <option value="off">off — 关闭：不自动检测（推荐；只在点「隐写检测」时按需单张做）</option>
+        <option value="auto">auto — 自动：仅对「没有任何文字元数据」的 PNG 先做低成本预检</option>
+        <option value="always">always — 每张 PNG 都预检（含已有文字元数据的，最费流量）</option>
+      </select>
+    </label>
+    <div class="note">NovelAI 会把提示词另外写进 PNG 的 alpha 通道最低位；有些图连 Comment 文字块都没有，提示词只剩这份隐写数据。<b>省流量流程</b>：先只读文件前 ~15%（前 152 行就够判断有没有隐写标记）→ 不中就停；没有 alpha 通道的 PNG 连这一段都不用读；只有确认有隐写才下载整份去解出提示词。同一个开关在扩展弹窗顶部也能改。</div>
+    <label class="fld"><span>自动检测张数上限（每页）</span><input type="number" id="autoScanLimit" min="1" max="2000"></label>
+    <label class="fld"><span>并发请求数</span><input type="number" id="concurrency" min="1" max="8"></label>
+    <label class="fld"><span>请求间隔（毫秒，防限流）</span><input type="number" id="minGapMs" min="0" max="5000"></label>
+    <label class="fld"><span>首段抓取大小（KB）</span><input type="number" id="headKB" min="16" max="4096"></label>
+    <label class="fld"><span>完整下载上限（MB，超过只读首段）</span><input type="number" id="maxFullMB" min="1" max="64"></label>
+    <label class="fld"><span>小文件直接下载上限（KB，建议 256）</span><input type="number" id="smallFullKB" min="0" max="4096"></label>
+    <label class="fld"><span>每页流量预算（MB，超过就停止自动检测）</span><input type="number" id="pageBudgetMB" min="1" max="500"></label>
+    <label class="chk"><input type="checkbox" id="tailScan"><span>额外扫描文件末尾（能抓到写在 IDAT 之后的元数据，代价是每张多约 128 KB；默认关闭）</span></label>
+  </div>
+
+  <h2>显示</h2>
+  <div class="grid">
+    <label class="chk"><input type="checkbox" id="showBadge"><span>在图片角落显示徽章</span></label>
+    <label class="chk"><input type="checkbox" id="fabHidden"><span><b>隐藏悬浮球</b>（右下角圆球；按住可拖动、双击回到默认位置、右键隐藏；弹窗里可重新显示）</span></label>
+    <label class="chk"><input type="checkbox" id="badgeAll"><span>显示全部状态的徽章（默认只显示 NAI / CF / 出错三种）</span></label>
+    <label class="chk"><input type="checkbox" id="dimNoMeta"><span>暗淡没有提示词的图片（无数据、非 AI 元数据、被剥离都会变暗）</span></label>
+    <label class="fld"><span>默认关键词筛选（空格 = 全部词都要命中）</span><input type="text" id="keyword" placeholder="例：blue archive 1girl"></label>
+    <label class="fld"><span>默认来源筛选</span>
+      <select id="sourceFilter">
+        <option value="all">全部</option>
+        <option value="error">抓取失败/不支持</option>
+        <option value="comfyui">ComfyUI / 本地工具（A1111、InvokeAI、Fooocus…）</option>
+        <option value="novelai">NovelAI</option>
+        <option value="other">仅有非 AI 元数据（EXIF 等）</option>
+        <option value="none">无元数据</option>
+      </select>
+    </label>
+    <label class="fld"><span>缓存上限（条）</span><input type="number" id="cacheLimit" min="100" max="50000"></label>
+  </div>
+
+  <div class="row">
+    <button id="save" class="primary">保存设置</button>
+    <span id="saveMsg" class="msg"></span>
+  </div>
+
+  <h2>工具</h2>
+  <div class="tools">
+    <div class="tool">
+      <div class="tool-title">检测一个图片直链</div>
+      <div class="tool-row">
+        <input type="text" id="testUrl" placeholder="https://cdn.discordapp.com/attachments/.../file.png?ex=..&is=..&hm=..">
+        <button id="testBtn">检测</button>
+        <label class="chk"><input type="checkbox" id="testDeep"><span>深度</span></label>
+      </div>
+      <pre id="testOut" class="out"></pre>
+    </div>
+    <div class="tool">
+      <div class="tool-title">缓存</div>
+      <div class="tool-row">
+        <button id="exportCsv">导出缓存 CSV</button>
+        <button id="exportJson">导出缓存 JSON</button>
+        <button id="clearCache" class="danger">清空缓存</button>
+      </div>
+      <div id="cacheStat" class="msg"></div>
+    </div>
+  </div>
+
+  <h2>说明</h2>
+  <ul class="notes">
+    <li>Discord 页面上显示的是媒体代理图（media.discordapp.net），扩展会自动改抓 CDN 原图（cdn.discordapp.com），只保留 ex/is/hm 签名参数，避免代理重新编码导致元数据丢失。</li>
+    <li>判定规则：<b>novelai</b> / <b>comfyui（含 A1111、InvokeAI 等本地工具）</b> / <b>none（无 AI 元数据）</b>；另外单独标出“有元数据但不是 AI 提示词”的情况。</li>
+    <li>关键词筛选为模糊匹配：<code>blue_archive</code> 可命中 <code>blue archive</code>，大小写不敏感，多个词需全部命中。</li>
+    <li>结果按附件路径缓存，滚动回来或刷新页面不会重复下载。</li>
+  </ul>
+</div>
+<script src="options.js"></script>
+</body>
+</html>

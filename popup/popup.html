@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Discord 元数据检测器</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="logo">AI</div>
+    <div>
+      <div class="ttl">Discord 元数据检测器</div>
+      <div class="sub" id="pageInfo">正在读取当前页面…</div>
+    </div>
+  </header>
+
+  <section id="stats" class="stats">
+    <div class="stat"><span id="sAI">0</span><label>有提示词</label></div>
+    <div class="stat"><span id="sNAI">0</span><label>NovelAI</label></div>
+    <div class="stat"><span id="sLocal">0</span><label>本地工具</label></div>
+    <div class="stat"><span id="sNone">0</span><label>无元数据</label></div>
+  </section>
+
+  <section class="row">
+    <button id="btnPanel" class="primary">打开检测面板</button>
+    <button id="btnScan">扫描已加载的图</button>
+  </section>
+
+  <section class="toggles">
+    <label><input type="checkbox" id="tEnabled"><span><b>启用检测</b>（取消勾选＝停止识别，不再发任何请求）</span></label>
+    <label><input type="checkbox" id="tAuto"><span>浏览时自动检测（进入视野）</span></label>
+    <label><input type="checkbox" id="tDim"><span>暗淡没有元数据的图片</span></label>
+    <label><input type="checkbox" id="tBadge"><span>在图片上显示徽章</span></label>
+    <label title="右下角那个圆球；可拖动，双击回到默认位置，右键也可隐藏"><input type="checkbox" id="tFab"><span>隐藏悬浮球</span></label>
+  </section>
+
+  <section class="stealth">
+    <label class="stealth-label" for="selStealth">alpha 隐写检测（off / auto / always）</label>
+    <select id="selStealth">
+      <option value="off">off — 关闭：不自动检测（推荐）</option>
+      <option value="auto">auto — 自动：只对没有文字元数据的 PNG</option>
+      <option value="always">always — 每张 PNG 都查</option>
+    </select>
+    <div class="sub" id="stealthHint">—</div>
+  </section>
+
+  <section class="row">
+    <button id="btnOptions">设置</button>
+    <button id="btnClear">清空缓存</button>
+  </section>
+
+  <footer id="cacheInfo">缓存：—</footer>
+  <script src="popup.js"></script>
+</body>
+</html>

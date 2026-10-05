@@ -1,0 +1,10 @@
+# 打包产物与测试夹具（夹具由 writeFixtures() 在跑测试时自动生成）
+dist/
+test/fixtures/
+
+# 编辑器 / 系统
+node_modules/
+.DS_Store
+Thumbs.db
+*.pem
+*.crx

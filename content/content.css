@@ -1,0 +1,325 @@
+/* content/content.css —— 全部以 dmd- 命名空間，降低與 Discord 樣式衝突 */
+.dmd-root {
+  position: fixed;
+  right: 18px;
+  bottom: 84px;
+  z-index: 2147483000;
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #e6e8ee;
+}
+.dmd-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 84px;
+  z-index: 1;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(145deg, #2b2d31, #1e1f22);
+  color: #fff;
+  cursor: grab;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  font-weight: 700;
+  font-size: 13px;
+  user-select: none;
+  touch-action: none;
+}
+.dmd-fab:hover { border-color: #5865f2; }
+.dmd-fab:active, .dmd-fab.dmd-dragging { cursor: grabbing; }
+.dmd-fab.dmd-dragging { opacity: 0.85; }
+.dmd-fab-hide {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4e5058;
+  color: #fff;
+  font-size: 12px;
+  line-height: 17px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  opacity: 0;
+  transition: opacity 0.12s;
+  cursor: pointer;
+}
+.dmd-fab:hover .dmd-fab-hide { opacity: 1; }
+.dmd-fab-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #1f7a4d;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+.dmd-panel {
+  position: absolute;
+  right: 0;
+  bottom: 58px;
+  width: 520px;
+  max-width: calc(100vw - 36px);
+  max-height: min(76vh, 720px);
+  display: flex;
+  flex-direction: column;
+  background: #1e1f22;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.dmd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #2b2d31;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dmd-title { font-weight: 700; }
+.dmd-icon-btn {
+  background: transparent;
+  border: 0;
+  color: #b5bac1;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.dmd-paused-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #3a2a12;
+  color: #f0b132;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dmd-paused-banner .dmd-btn { margin-left: auto; padding: 3px 8px; font-size: 11px; }
+.dmd-root.dmd-paused .dmd-fab { opacity: 0.65; }
+.dmd-hint { padding: 0 12px 8px; color: #8a8f98; font-size: 11px; line-height: 1.5; }
+.dmd-stats { padding: 8px 12px; color: #b5bac1; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.dmd-controls { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.dmd-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #111214;
+  color: #e6e8ee;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+}
+.dmd-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.dmd-check { display: inline-flex; align-items: center; gap: 4px; color: #b5bac1; font-size: 12px; cursor: pointer; }
+.dmd-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.dmd-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #2b2d31;
+  color: #c7cbd1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.dmd-tab:hover { background: #383a40; }
+.dmd-tab.active { background: #5865f2; border-color: #5865f2; color: #fff; }
+.dmd-tab-n {
+  display: inline-block;
+  min-width: 16px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 8px;
+  font-size: 11px;
+  padding: 0 4px;
+}
+.dmd-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.dmd-btn {
+  background: #2b2d31;
+  color: #e6e8ee;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.dmd-btn:hover { background: #383a40; }
+.dmd-btn-primary { background: #5865f2; border-color: #5865f2; color: #fff; }
+.dmd-btn-primary:hover { background: #4752c4; }
+.dmd-list { overflow: auto; padding: 6px; flex: 1; }
+.dmd-empty { padding: 18px; color: #8a8f98; text-align: center; font-size: 12px; }
+.dmd-item-wrap { border-radius: 8px; margin-bottom: 2px; }
+.dmd-item-wrap:hover { background: rgba(255, 255, 255, 0.05); }
+.dmd-item-wrap.dmd-item-open { background: rgba(88, 101, 242, 0.10); padding-bottom: 8px; }
+.dmd-item { display: flex; gap: 8px; align-items: flex-start; padding: 7px 6px; border-radius: 8px; }
+.dmd-item:hover { background: transparent; }
+.dmd-item-main { flex: 1; min-width: 0; cursor: pointer; }
+.dmd-item-title { font-size: 12px; color: #f2f3f5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dmd-item-sub { font-size: 11px; color: #a3a6aa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dmd-item-prev { font-size: 11px; color: #7d8288; margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dmd-full { margin: 2px 6px 4px; background: #131417; border: 1px solid rgba(255,255,255,0.09); border-radius: 8px; padding: 8px; }
+.dmd-full-label { font-size: 11px; color: #8a8f98; margin: 6px 0 3px; }
+.dmd-full-label:first-child { margin-top: 0; }
+.dmd-full-text {
+  margin: 0;
+  padding: 7px 8px;
+  background: #0f1012;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  color: #e3e5e8;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow: auto;
+  user-select: text;
+}
+.dmd-full-bar { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.dmd-chip {
+  display: inline-block;
+  min-width: 34px;
+  text-align: center;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #4e5058;
+  flex: 0 0 auto;
+}
+.dmd-chip.dmd-st-novelai { background: #1f7a4d; }
+.dmd-chip.dmd-st-ai { background: #3b5bdb; }
+.dmd-chip.dmd-st-none { background: #4e5058; }
+.dmd-chip.dmd-st-other { background: #8a6d1f; }
+.dmd-chip.dmd-st-stripped { background: #7a3b1f; }
+.dmd-chip.dmd-st-error { background: #a33; }
+.dmd-chip.dmd-st-pending, .dmd-chip.dmd-st-unsupported { background: #3a3c42; }
+.dmd-item-acts { display: flex; gap: 4px; flex: 0 0 auto; flex-wrap: wrap; max-width: 180px; justify-content: flex-end; }
+.dmd-mini {
+  background: #2b2d31;
+  color: #dbdee1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  font-size: 11px;
+  padding: 2px 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.dmd-mini:hover { background: #3a3c42; }
+
+/* 圖片上的徽章（只顯示 NAI / CF / ! ） */
+.dmd-badge {
+  z-index: 2147482000;
+  cursor: pointer;
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 5px;
+  color: #fff;
+  background: rgba(78, 80, 88, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  pointer-events: auto;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.3px;
+}
+/* 面板 hover 某一行時，頻道裡對應的圖加外框 */
+.dmd-mark { outline: 3px solid #5865f2 !important; outline-offset: 2px; border-radius: 6px; }
+
+/* 面板縮圖（只用頁面已載入的網址，不額外耗流量） */
+.dmd-thumb {
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #2b2d31;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+.dmd-thumb-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6a6f77;
+  font-size: 11px;
+  cursor: default;
+}
+
+/* 點徽章後在圖片旁彈出的說明 */
+.dmd-pop {
+  position: fixed;
+  z-index: 2147483500;
+  width: 400px;
+  max-width: calc(100vw - 24px);
+  max-height: 70vh;
+  overflow: auto;
+  background: #1e1f22;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #e6e8ee;
+}
+.dmd-pop-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.dmd-pop-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.dmd-pop-status { color: #b5bac1; font-size: 11.5px; margin-bottom: 6px; }
+.dmd-pop-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.dmd-badge-abs { position: absolute; top: 6px; left: 6px; }
+.dmd-badge-inline { display: inline-block; margin-left: 6px; vertical-align: middle; }
+.dmd-st-novelai { background: rgba(31, 122, 77, 0.95); }
+.dmd-st-ai { background: rgba(59, 91, 219, 0.95); }
+.dmd-st-error { background: rgba(170, 51, 51, 0.95); }
+
+/* 暗淡：直接加類別，避免被 Discord 自身樣式蓋掉 */
+.dmd-dim {
+  opacity: 0.22 !important;
+  filter: grayscale(1) !important;
+  transition: opacity 0.15s ease;
+}
+.dmd-flash {
+  outline: 3px solid #5865f2 !important;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+#dmd-toast {
+  position: fixed;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  z-index: 2147483600;
+  background: rgba(30, 31, 34, 0.96);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  max-width: 70vw;
+}
