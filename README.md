@@ -28,7 +28,7 @@
 
 ## 三、安装
 
-**方式一（推荐）**：到 [Releases](../../releases) 下载最新的 zip 解压，然后按下面 2–4 步加载。
+**方式一（推荐）**：到 [Releases](https://github.com/dashuaibi12339-blip/discord-ai-metadata-detector/releases) 下载最新的 zip 解压，然后按下面 2–4 步加载。
 
 **方式二**：`git clone` 本仓库，或用右上角 Code → Download ZIP 下载源码，按下面 2–4 步加载。
 
