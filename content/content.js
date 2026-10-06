@@ -6,7 +6,7 @@
 
   var DEFAULTS = {
     enabled: true, autoScan: true, scanMode: "visible", stealthScan: "off", showBadge: true, badgeMode: "ai",
-    fabPos: null, fabHidden: false,
+    fabPos: null, fabHidden: false, pendingBadge: false,
     dimNoMeta: false, keyword: "", sourceFilter: "all", autoScanLimit: 60, pageBudgetMB: 30,
   };
   var settings = Object.assign({}, DEFAULTS);
@@ -91,8 +91,13 @@
     if (rec.status !== "error") { lines.push("（共读取 " + (rec.bytes || 0) + " 字节）"); }
     return lines.join("\n");
   }
-  function shouldShowBadge(rec) {
+  // 已請求但還沒拿到結果 →「識別中」
+  function isPendingKey(key) {
+    return !!(settings.pendingBadge && key && checked[key] && !records.has(key));
+  }
+  function shouldShowBadge(rec, key) {
     if (!settings.showBadge) { return false; }
+    if (!rec && isPendingKey(key)) { return true; }   // 「識別中」徽章（可選項）
     if (settings.badgeMode === "all") { return !!shortLabel(rec); }
     // 預設：只有「有 AI 提示詞」與「抓取失敗」才顯示徽章
     if (!rec) { return false; }
@@ -162,7 +167,7 @@
     var list = targets.get(key);
     if (!list) { list = []; targets.set(key, list); }
     for (var i = 0; i < list.length; i++) { if (list[i].el === el) { return; } }
-    var item = { el: el, badge: null, inline: inline, url: url };
+    var item = { el: el, badge: null, inline: inline, url: url, key: key };
     list.push(item);
     el.setAttribute("data-dmd-key", key);
     el.classList.add("dmd-target");
@@ -212,13 +217,15 @@
 
   function applyRecordToTarget(item, rec) {
     var b = item.badge;
+    var pending = !rec && isPendingKey(item.key);
     // 沒有徽章（例如同一張附件由另一個節點持有徽章）也要更新狀態屬性與暗淡
     if (b && b.isConnected) {
-      var label = shortLabel(rec);
-      b.className = "dmd-badge " + (item.inline ? "dmd-badge-inline" : "dmd-badge-abs") + " " + badgeClass(rec);
+      var label = pending ? "…" : shortLabel(rec);
+      var baseCls = "dmd-badge " + (item.inline ? "dmd-badge-inline" : "dmd-badge-abs");
+      b.className = pending ? (baseCls + " dmd-badge-pending dmd-st-pending") : (baseCls + " " + badgeClass(rec));
       b.textContent = label;
-      b.title = titleFor(rec, fileNameOf(item.url));
-      b.style.display = shouldShowBadge(rec) && label ? "" : "none";
+      b.title = pending ? (fileNameOf(item.url) + "\n正在识别这张图…（还没拿到结果）") : titleFor(rec, fileNameOf(item.url));
+      b.style.display = shouldShowBadge(rec, item.key) && (label || pending) ? "" : "none";
     }
     item.el.setAttribute("data-dmd-status", rec ? rec.status : "pending");
     item.el.setAttribute("data-dmd-source", rec ? (rec.source || "none") : "unknown");
@@ -344,6 +351,7 @@
     if (!isEnabled()) { return; }
     if (checked[key]) { return; }
     checked[key] = true;
+    updateKey(key);          // 立刻畫出「識別中」徽章（選項開啟時）
     queue.push({ key: key, url: url });
     pump();
   }
@@ -364,6 +372,9 @@
           pageScanned++;
         }
         updatePanel(); updateBadge();
+      } else {
+        // 沒拿到結果（總開關暫停、SW 忙碌…）：放掉標記以便重試，避免徽章一直停在「識別中」
+        for (var j = 0; j < items.length; j++) { delete checked[items[j].key]; updateKey(items[j].key); }
       }
       setTimeout(pump, 180);
     });

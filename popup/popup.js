@@ -1,5 +1,5 @@
 "use strict";
-var DEFAULTS = { enabled: true, autoScan: true, stealthScan: "off", showBadge: true, dimNoMeta: false, fabHidden: false };
+var DEFAULTS = { enabled: true, autoScan: true, stealthScan: "off", showBadge: true, dimNoMeta: false, fabHidden: false, pendingBadge: false };
 var STEALTH_HINT = {
   off: "off：完全不自动检测隐写。只有你点图上的「隐写检测」按钮、右键菜单或面板批量按钮时才做——不花额外流量。",
   auto: "auto：只对「扫完首段完全没有文字元数据」的 PNG（本来会标成无提示词的那些）自动预检。没 alpha 通道 0 额外字节；预检不中即停；只有命中才下载整份。",
@@ -35,6 +35,7 @@ async function init() {
   $("tDim").checked = !!settings.dimNoMeta;
   $("tBadge").checked = !!settings.showBadge;
   $("tFab").checked = !!settings.fabHidden;
+  $("tPending").checked = !!settings.pendingBadge;
   $("selStealth").value = settings.stealthScan || "off";
   $("stealthHint").textContent = STEALTH_HINT[settings.stealthScan || "off"] || "";
 
@@ -77,6 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
   $("tAuto").addEventListener("change", function (e) { setSetting({ autoScan: e.target.checked }); });
   $("tDim").addEventListener("change", function (e) { setSetting({ dimNoMeta: e.target.checked }); });
   $("tBadge").addEventListener("change", function (e) { setSetting({ showBadge: e.target.checked }); });
+  $("tPending").addEventListener("change", function (e) { setSetting({ pendingBadge: e.target.checked }); });
   $("tFab").addEventListener("change", function (e) {
     setSetting({ fabHidden: e.target.checked });
     $("pageInfo").textContent = e.target.checked ? "已隐藏悬浮球（弹窗可重新显示）" : "已显示悬浮球";

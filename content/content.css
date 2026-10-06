@@ -292,6 +292,10 @@
 .dmd-st-novelai { background: rgba(31, 122, 77, 0.95); }
 .dmd-st-ai { background: rgba(59, 91, 219, 0.95); }
 .dmd-st-error { background: rgba(170, 51, 51, 0.95); }
+/* 「識別中」徽章（可選項）：灰色 + 呼吸動畫，用來區分「無資料」與「還在跑」 */
+.dmd-badge.dmd-badge-pending { background: rgba(78, 80, 88, 0.95); color: #e6e8ee; animation: dmd-pending-pulse 1.2s ease-in-out infinite; }
+@keyframes dmd-pending-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .dmd-badge.dmd-badge-pending { animation: none; opacity: 0.75; } }
 
 /* 暗淡：直接加類別，避免被 Discord 自身樣式蓋掉 */
 .dmd-dim {

@@ -102,6 +102,7 @@ const REC = {
   "attachments/1/2/other.png": { v: 1, key: "attachments/1/2/other.png", url: "https://cdn.discordapp.com/attachments/1/2/other.png", status: "none", source: "none", tool: "", fields: [], notes: [], searchText: "", bytes: 10 },
 };
 const runtimeListeners = [];
+const hangKeys = new Set();          // 這些 key 的 checkItems 永不回應 = 模擬「識別中」
 const settingsPatches = [];
 const storageListeners = [];
 globalThis.chrome = {
@@ -110,9 +111,12 @@ globalThis.chrome = {
     getManifest: () => ({ version: "test" }),
     sendMessage: (msg, cb) => {
       let resp = { ok: false, error: "unknown: " + msg.type };
-      if (msg.type === "getSettings") { resp = { ok: true, settings: { enabled: true, autoScan: true, showBadge: true, badgeMode: "ai", dimNoMeta: false, keyword: "", sourceFilter: "all", autoScanLimit: 60, stealthScan: "off" } }; }
+      if (msg.type === "getSettings") { resp = { ok: true, settings: { enabled: true, autoScan: true, showBadge: true, badgeMode: "ai", dimNoMeta: false, keyword: "", sourceFilter: "all", autoScanLimit: 60, stealthScan: "off", pendingBadge: true } }; }
       else if (msg.type === "getCached") { resp = { ok: true, results: REC }; }
-      else if (msg.type === "checkItems") { resp = { ok: true, results: msg.items.map((it) => REC[it.key] || { v: 1, key: it.key, url: it.url, status: "none", source: "none", tool: "", fields: [], notes: [], searchText: "" }) }; }
+      else if (msg.type === "checkItems") {
+        if (msg.items.some((it) => hangKeys.has(it.key))) { return; }   // 故意不回應
+        resp = { ok: true, results: msg.items.map((it) => REC[it.key] || { v: 1, key: it.key, url: it.url, status: "none", source: "none", tool: "", fields: [], notes: [], searchText: "" }) };
+      }
       else if (msg.type === "badge") { resp = { ok: true }; }
       else if (msg.type === "setSettings") { settingsPatches.push(msg.patch || {}); resp = { ok: true }; }
       setTimeout(() => cb(resp), 0);
@@ -215,6 +219,34 @@ if (storageListeners[0]) {
   await delay(250);
   ok("设定改回后球重新出现", fabEl.style.display === "" , fabEl.style.display);
 } else { ok("有 storage 監聽可重新顯示", false, "no listener"); }
+
+
+// ---------- 「識別中」徽章（可選項） ----------
+console.log("== 「识别中」徽章 ==");
+const SLOW = "attachments/1/2/slow.png";
+// 前面懸浮球那段用 storage 事件改過設定（會把新欄位蓋回預設），這裡先確保選項是開的
+if (storageListeners[0]) {
+  storageListeners[0]({ settings: { newValue: { enabled: true, showBadge: true, pendingBadge: true, autoScan: false } } }, "local");
+  await delay(200);
+}
+const imSlow = makeEl("img");
+imSlow._rect = { width: 320, height: 320 };
+imSlow.attrs.src = "https://media.discordapp.net/attachments/1/2/slow.png?ex=1&width=320";
+hostC.appendChild(imSlow);
+hangKeys.add(SLOW);          // 這張圖的請求永遠不會回來
+R("scanNow");
+await delay(500);
+const slowBadges = () => walk(body, []).filter((e) => String(e.className).indexOf("dmd-badge") !== -1 && e.getAttribute("data-dmd-badge") === SLOW);
+ok("識別中會出現徽章", slowBadges().length === 1, slowBadges().length);
+ok("徽章是「…」且帶 pending 樣式", !!slowBadges()[0] && slowBadges()[0].textContent === "…" && String(slowBadges()[0].className).indexOf("dmd-badge-pending") !== -1, slowBadges()[0] && [slowBadges()[0].textContent, slowBadges()[0].className]);
+ok("識別中徽章是可見的", !!slowBadges()[0] && slowBadges()[0].style.display === "", slowBadges()[0] && slowBadges()[0].style.display);
+const doneBadge = walk(body, []).filter((e) => String(e.className).indexOf("dmd-badge") !== -1 && e.getAttribute("data-dmd-badge") === "attachments/1/2/same.png")[0];
+ok("已有結果的圖不會被標成識別中", !!doneBadge && String(doneBadge.className).indexOf("dmd-badge-pending") === -1, doneBadge && doneBadge.className);
+if (storageListeners[0]) {
+  storageListeners[0]({ settings: { newValue: { enabled: true, showBadge: true, pendingBadge: false, autoScan: false } } }, "local");
+  await delay(300);
+  ok("關掉選項後識別中徽章不再顯示", slowBadges().length === 1 && slowBadges()[0].style.display === "none", slowBadges()[0] && slowBadges()[0].style.display);
+}
 
 console.log("徽章回歸: " + pass + " 通過, " + fail + " 失敗");
 process.exit(fail ? 1 : 0);

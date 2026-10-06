@@ -1,5 +1,5 @@
 "use strict";
-var FIELDS = ["enabled", "autoScan", "stealthScan", "autoScanLimit", "concurrency", "minGapMs", "showBadge", "fabHidden", "badgeMode", "dimNoMeta", "keyword", "sourceFilter", "cacheLimit", "tailScan", "smallFullBytes", "pageBudgetMB"];
+var FIELDS = ["enabled", "autoScan", "stealthScan", "autoScanLimit", "concurrency", "minGapMs", "showBadge", "pendingBadge", "fabHidden", "badgeMode", "dimNoMeta", "keyword", "sourceFilter", "cacheLimit", "tailScan", "smallFullBytes", "pageBudgetMB"];
 function $(id) { return document.getElementById(id); }
 function send(msg) {
   return new Promise(function (resolve) {
@@ -28,6 +28,7 @@ async function load() {
   $("tailScan").checked = !!s.tailScan;
   $("showBadge").checked = !!s.showBadge;
   $("fabHidden").checked = !!s.fabHidden;
+  $("pendingBadge").checked = !!s.pendingBadge;
   $("badgeAll").checked = (s.badgeMode || "ai") === "all";
   $("dimNoMeta").checked = !!s.dimNoMeta;
   $("keyword").value = s.keyword || "";
@@ -56,6 +57,7 @@ function collect() {
   patch.tailScan = $("tailScan").checked;
   patch.showBadge = $("showBadge").checked;
   patch.fabHidden = $("fabHidden").checked;
+  patch.pendingBadge = $("pendingBadge").checked;
   patch.badgeMode = $("badgeAll").checked ? "all" : "ai";
   patch.dimNoMeta = $("dimNoMeta").checked;
   patch.keyword = $("keyword").value;

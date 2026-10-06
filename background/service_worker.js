@@ -10,6 +10,7 @@ const DEFAULTS = {
   enabled: true,           // 總開關：false 時完全不檢測、不發任何網路請求
   fabPos: null,            // 懸浮球位置（null = 預設右下角）
   fabHidden: false,        // 懸浮球是否隱藏
+  pendingBadge: false,     // 是否顯示「識別中」徽章
   autoScan: true,
   scanMode: "visible",
   headBytes: 131072,
