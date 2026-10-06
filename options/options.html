@@ -25,6 +25,8 @@
     <label class="fld"><span>自动检测张数上限（每页）</span><input type="number" id="autoScanLimit" min="1" max="2000"></label>
     <label class="fld"><span>并发请求数</span><input type="number" id="concurrency" min="1" max="8"></label>
     <label class="fld"><span>请求间隔（毫秒，防限流）</span><input type="number" id="minGapMs" min="0" max="5000"></label>
+    <label class="fld"><span>扫描防抖（毫秒，图片进入视野后多久开始检测；0 = 立即）</span><input type="number" id="scanDebounceMs" min="0" max="5000"></label>
+    <label class="fld"><span>重扫防抖（毫秒，Discord 改动页面后多久重新扫描）</span><input type="number" id="domDebounceMs" min="0" max="5000"></label>
     <label class="fld"><span>首段抓取大小（KB）</span><input type="number" id="headKB" min="16" max="4096"></label>
     <label class="fld"><span>完整下载上限（MB，超过只读首段）</span><input type="number" id="maxFullMB" min="1" max="64"></label>
     <label class="fld"><span>小文件直接下载上限（KB，建议 256）</span><input type="number" id="smallFullKB" min="0" max="4096"></label>

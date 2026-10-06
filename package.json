@@ -1,6 +1,6 @@
 {
   "name": "discord-ai-metadata-detector",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "private": true,
   "type": "module",
   "description": "Chrome/Edge 扩展：检测 Discord 网页版图片附件里的 AI 绘图元数据，直接读出提示词、参数与来源",

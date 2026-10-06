@@ -6,7 +6,7 @@
 
   var DEFAULTS = {
     enabled: true, autoScan: true, scanMode: "visible", stealthScan: "off", showBadge: true, badgeMode: "ai",
-    fabPos: null, fabHidden: false, pendingBadge: false,
+    fabPos: null, fabHidden: false, pendingBadge: false, scanDebounceMs: 250, domDebounceMs: 500,
     dimNoMeta: false, keyword: "", sourceFilter: "all", autoScanLimit: 60, pageBudgetMB: 30,
   };
   var settings = Object.assign({}, DEFAULTS);
@@ -439,10 +439,13 @@
   }
   function flushVisible() {
     if (visibleTimer) { return; }
+    var d = Number(settings.scanDebounceMs);
+    if (!isFinite(d) || d < 0) { d = 250; }
+    if (d > 5000) { d = 5000; }
     visibleTimer = setTimeout(function () {
       visibleTimer = null;
       scanKeys(visibleKeys.splice(0, visibleKeys.length));
-    }, 250);
+    }, d);
   }
 
   // ---------- 圖片旁的浮動說明（點徽章或 hover 小標籤） ----------
@@ -611,6 +614,11 @@
     var hideEl = null;
     try { hideEl = btn.querySelector ? btn.querySelector(".dmd-fab-hide") : null; } catch (e) { hideEl = null; }
     if (hideEl && hideEl.addEventListener) {
+      // 按在 × 上時必須擋住球：否則球會 setPointerCapture，pointerup 被重定向到球，
+      // 瀏覽器就把 click 派給球（叉號的處理器永遠不會跑，反而開了面板）
+      hideEl.addEventListener("pointerdown", function (ev) {
+        if (ev && ev.stopPropagation) { ev.stopPropagation(); }
+      });
       hideEl.addEventListener("click", function (ev) {
         if (ev && ev.stopPropagation) { ev.stopPropagation(); }
         if (ev && ev.preventDefault) { ev.preventDefault(); }
@@ -630,6 +638,8 @@
     });
     btn.addEventListener("pointerdown", function (ev) {
       if (!ev || ev.clientX === undefined) { return; }
+      // 點在隱藏鈕（或其子節點）上時不進入拖動，避免指針捕獲搶走 click
+      if (hideEl && ev.target && (ev.target === hideEl || (hideEl.contains && hideEl.contains(ev.target)))) { return; }
       if (ev.button !== undefined && ev.button !== 0 && ev.button !== null) { return; }
       dragging = true; moved = false;
       sx = ev.clientX; sy = ev.clientY;
@@ -1257,7 +1267,10 @@
     mo = new MutationObserver(function () {
       if (!isEnabled()) { return; }
       clearTimeout(mo.__t);
-      mo.__t = setTimeout(function () { collect(); updatePanel(); }, 500);
+      var dd = Number(settings.domDebounceMs);
+      if (!isFinite(dd) || dd < 0) { dd = 500; }
+      if (dd > 5000) { dd = 5000; }
+      mo.__t = setTimeout(function () { collect(); updatePanel(); }, dd);
     });
     mo.observe(document.body, { childList: true, subtree: true });
   }

@@ -1,5 +1,5 @@
 "use strict";
-var FIELDS = ["enabled", "autoScan", "stealthScan", "autoScanLimit", "concurrency", "minGapMs", "showBadge", "pendingBadge", "fabHidden", "badgeMode", "dimNoMeta", "keyword", "sourceFilter", "cacheLimit", "tailScan", "smallFullBytes", "pageBudgetMB"];
+var FIELDS = ["enabled", "autoScan", "stealthScan", "autoScanLimit", "concurrency", "minGapMs", "scanDebounceMs", "domDebounceMs", "showBadge", "pendingBadge", "fabHidden", "badgeMode", "dimNoMeta", "keyword", "sourceFilter", "cacheLimit", "tailScan", "smallFullBytes", "pageBudgetMB"];
 function $(id) { return document.getElementById(id); }
 function send(msg) {
   return new Promise(function (resolve) {
@@ -21,6 +21,8 @@ async function load() {
   $("autoScanLimit").value = s.autoScanLimit;
   $("concurrency").value = s.concurrency;
   $("minGapMs").value = s.minGapMs;
+  $("scanDebounceMs").value = s.scanDebounceMs === undefined ? 250 : s.scanDebounceMs;
+  $("domDebounceMs").value = s.domDebounceMs === undefined ? 500 : s.domDebounceMs;
   $("headKB").value = Math.round((s.headBytes || 262144) / 1024);
   $("maxFullMB").value = Math.round((s.maxFullBytes || 8388608) / 1048576);
   $("smallFullKB").value = Math.round((s.smallFullBytes || 262144) / 1024);
@@ -50,6 +52,8 @@ function collect() {
   patch.autoScanLimit = parseInt($("autoScanLimit").value, 10) || 60;
   patch.concurrency = Math.max(1, Math.min(8, parseInt($("concurrency").value, 10) || 3));
   patch.minGapMs = Math.max(0, Math.min(5000, parseInt($("minGapMs").value, 10) || 0));
+  patch.scanDebounceMs = Math.max(0, Math.min(5000, parseInt($("scanDebounceMs").value, 10) || 0));
+  patch.domDebounceMs = Math.max(0, Math.min(5000, parseInt($("domDebounceMs").value, 10) || 0));
   patch.headBytes = Math.max(16384, (parseInt($("headKB").value, 10) || 256) * 1024);
   patch.maxFullBytes = Math.max(1048576, (parseInt($("maxFullMB").value, 10) || 8) * 1048576);
   patch.smallFullBytes = Math.max(0, (parseInt($("smallFullKB").value, 10) || 0) * 1024);

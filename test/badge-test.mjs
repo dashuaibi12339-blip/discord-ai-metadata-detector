@@ -84,7 +84,19 @@ globalThis.location = { href: "https://discord.com/channels/1/2" };
 Object.defineProperty(globalThis, "navigator", { value: { clipboard: { writeText: async () => {} } }, configurable: true, writable: true });
 globalThis.getComputedStyle = () => ({ position: "static" });
 globalThis.MutationObserver = class { constructor(fn) { this.fn = fn; } observe() {} disconnect() {} };
-globalThis.IntersectionObserver = class { constructor(fn) { this.fn = fn; } observe() {} disconnect() {} };
+globalThis.IntersectionObserver = class {
+  constructor(fn) { this.fn = fn; this.observed = []; ioInstances.push(this); }
+  observe(el) { this.observed.push(el); }
+  unobserve() {}
+  disconnect() {}
+};
+// content.js 用 "IntersectionObserver" in window 判斷，因此 window 上也必須有
+// content.js 用 "IntersectionObserver" in window 判斷，window 上也必須有
+globalThis.window.IntersectionObserver = globalThis.IntersectionObserver;
+globalThis.window.MutationObserver = globalThis.MutationObserver;
+globalThis.window.getComputedStyle = globalThis.getComputedStyle;
+globalThis.window.innerWidth = 1200;
+globalThis.window.innerHeight = 900;
 globalThis.URL.createObjectURL = () => "blob:fake";
 globalThis.URL.revokeObjectURL = () => {};
 globalThis.Blob = class { constructor(p) { this.p = p; } };
@@ -103,6 +115,9 @@ const REC = {
 };
 const runtimeListeners = [];
 const hangKeys = new Set();          // 這些 key 的 checkItems 永不回應 = 模擬「識別中」
+const delayKeys = new Set();         // 這些 key 的回應延遲 1.2 秒（模擬「識別中」持續一段時間）
+const sentItems = [];                // 已發出的 checkItems key（驗證防抖是否生效）
+const ioInstances = [];              // 捕捉 IntersectionObserver，測試可手動觸發「進入視野」
 const settingsPatches = [];
 const storageListeners = [];
 globalThis.chrome = {
@@ -114,7 +129,12 @@ globalThis.chrome = {
       if (msg.type === "getSettings") { resp = { ok: true, settings: { enabled: true, autoScan: true, showBadge: true, badgeMode: "ai", dimNoMeta: false, keyword: "", sourceFilter: "all", autoScanLimit: 60, stealthScan: "off", pendingBadge: true } }; }
       else if (msg.type === "getCached") { resp = { ok: true, results: REC }; }
       else if (msg.type === "checkItems") {
+        for (const it of msg.items) { sentItems.push(it.key); }
         if (msg.items.some((it) => hangKeys.has(it.key))) { return; }   // 故意不回應
+        if (msg.items.some((it) => delayKeys.has(it.key))) {
+          setTimeout(() => cb({ ok: true, results: msg.items.map((it) => ({ v: 1, key: it.key, url: it.url, status: "none", source: "none", tool: "", fields: [], notes: [], searchText: "" })) }), 1200);
+          return;
+        }
         resp = { ok: true, results: msg.items.map((it) => REC[it.key] || { v: 1, key: it.key, url: it.url, status: "none", source: "none", tool: "", fields: [], notes: [], searchText: "" }) };
       }
       else if (msg.type === "badge") { resp = { ok: true }; }
@@ -209,6 +229,15 @@ fabEl.dispatch("dblclick", {});
 ok("双击回到默认位置（fabPos=null）", settingsPatches.slice(p1).some((p) => p.fabPos === null), settingsPatches.slice(p1));
 const hideEl = walk(fabEl, []).filter((e) => String(e.className).split(/\s+/).indexOf("dmd-fab-hide") !== -1)[0];
 ok("悬浮球上有隐藏按钮（×）", !!hideEl, !!hideEl);
+// 迴歸：按在 × 上不能進入拖動 —— 否則球會 setPointerCapture，pointerup 被重定向到球，
+// 瀏覽器把 click 派給球，叉號的處理器永遠不會跑（這就是它「沒用」的原因）
+const p3 = settingsPatches.length;
+fabEl.dispatch("pointerdown", { clientX: 200, clientY: 200, button: 0, target: hideEl });
+fabEl.dispatch("pointermove", { clientX: 330, clientY: 300 });
+fabEl.dispatch("pointerup", {});
+await delay(50);
+ok("按在 × 上不會進入拖動（不寫 fabPos）", !settingsPatches.slice(p3).some((p) => p.fabPos), settingsPatches.slice(p3));
+ok("按在 × 上不會加上拖動樣式", String(fabEl.className).indexOf("dmd-dragging") === -1, fabEl.className);
 const p2 = settingsPatches.length;
 if (hideEl) { hideEl.dispatch("click", {}); }
 const hidePatch = settingsPatches.slice(p2).filter((p) => p.fabHidden === true);
@@ -247,6 +276,46 @@ if (storageListeners[0]) {
   await delay(300);
   ok("關掉選項後識別中徽章不再顯示", slowBadges().length === 1 && slowBadges()[0].style.display === "none", slowBadges()[0] && slowBadges()[0].style.display);
 }
+
+
+
+// ---------- 掃描防抖可調（0 = 進入視野就立刻檢測） ----------
+console.log("== 掃描防抖可調 ==");
+const bdFor = (k) => walk(body, []).filter((e) => String(e.className).indexOf("dmd-badge") !== -1 && e.getAttribute("data-dmd-badge") === k);
+const addImg = (key) => {
+  const im = makeEl("img");
+  im._rect = { width: 300, height: 300 };
+  im.attrs.src = "https://media.discordapp.net/attachments/1/2/" + key + "?ex=1&width=300";
+  hostC.appendChild(im);
+  delayKeys.add("attachments/1/2/" + key);
+  return im;
+};
+const targetFor = (fileName) => {
+  const io = ioInstances[0];
+  return io ? io.observed.filter((el) => String((el.attrs || {}).src || "").indexOf(fileName) !== -1)[0] : null;
+};
+// (1) scanDebounceMs = 0
+addImg("db0.png");
+storageListeners[0]({ settings: { newValue: { enabled: true, showBadge: true, pendingBadge: true, autoScan: true, scanDebounceMs: 0, domDebounceMs: 0 } } }, "local");
+await delay(300);
+const t0 = targetFor("db0.png");
+ok("觀察器有觀察到 db0.png", !!t0, !!t0);
+if (ioInstances[0] && t0) { ioInstances[0].fn([{ isIntersecting: true, target: t0 }]); }
+await delay(60);
+ok("scanDebounceMs=0：60ms 內就已送出請求", sentItems.indexOf("attachments/1/2/db0.png") !== -1, sentItems.slice(-4));
+ok("scanDebounceMs=0：識別中徽章同時可見", bdFor("attachments/1/2/db0.png").length === 1 && String(bdFor("attachments/1/2/db0.png")[0].className).indexOf("dmd-badge-pending") !== -1, bdFor("attachments/1/2/db0.png")[0] && bdFor("attachments/1/2/db0.png")[0].className);
+await delay(1400);   // 等慢回應回來，順便把佇列清空
+// (2) 預設 250ms
+addImg("db250.png");
+storageListeners[0]({ settings: { newValue: { enabled: true, showBadge: true, pendingBadge: true, autoScan: true, scanDebounceMs: 250, domDebounceMs: 500 } } }, "local");
+await delay(300);
+const t1 = targetFor("db250.png");
+ok("觀察器有觀察到 db250.png", !!t1, !!t1);
+if (ioInstances[0] && t1) { ioInstances[0].fn([{ isIntersecting: true, target: t1 }]); }
+await delay(100);
+ok("預設 250ms：100ms 時還沒送出（防抖仍在）", sentItems.indexOf("attachments/1/2/db250.png") === -1, sentItems.slice(-4));
+await delay(400);
+ok("預設 250ms：防抖過後才送出", sentItems.indexOf("attachments/1/2/db250.png") !== -1, sentItems.slice(-4));
 
 console.log("徽章回歸: " + pass + " 通過, " + fail + " 失敗");
 process.exit(fail ? 1 : 0);

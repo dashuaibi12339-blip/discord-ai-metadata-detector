@@ -11,6 +11,8 @@ const DEFAULTS = {
   fabPos: null,            // 懸浮球位置（null = 預設右下角）
   fabHidden: false,        // 懸浮球是否隱藏
   pendingBadge: false,     // 是否顯示「識別中」徽章
+  scanDebounceMs: 250,     // 進入視野後多久開始檢測（0 = 立即）
+  domDebounceMs: 500,      // Discord 改動頁面後多久重新掃描 DOM
   autoScan: true,
   scanMode: "visible",
   headBytes: 131072,
